@@ -20,7 +20,7 @@ body.light input,body.light select{background:#f8f9fc;border-color:#c8cdd8;color
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh;padding-bottom:calc(80px + env(safe-area-inset-bottom));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 /* HEADER */
-header{background:var(--surf);border-bottom:1px solid var(--brd);padding:10px 14px;display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:200}
+header{background:var(--surf);border-bottom:1px solid var(--brd);padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:200}
 .theme-sl{position:relative;display:inline-flex;align-items:center;width:52px;height:28px;cursor:pointer;flex-shrink:0}
 .theme-sl-track{position:absolute;inset:0;border-radius:28px;background:var(--brd2);border:1px solid var(--brd2);transition:background .25s}
 body.light .theme-sl-track{background:#d0d4dd}
