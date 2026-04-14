@@ -225,6 +225,9 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
   </label>
   <div class="tabs" id="tabsBar"></div>
   <a href="upute.html" target="_blank" rel="noopener" id="helpBtn" title="Upute za korištenje" style="width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);color:var(--mut2);font-family:var(--sans);font-size:.78rem;font-weight:700;text-decoration:none;flex-shrink:0;transition:all .18s" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--brd)';this.style.color='var(--mut2)'">?</a>
+  <button id="backupHeaderBtn" title="Backup podataka" onclick="openBackupModal()" style="width:36px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--brd);color:var(--mut2);background:transparent;cursor:pointer;flex-shrink:0;transition:all .18s;padding:0" onmouseover="this.style.borderColor='var(--acc)';this.style.color='var(--acc)'" onmouseout="this.style.borderColor='var(--brd)';this.style.color='var(--mut2)'">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 11l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg>
+  </button>
   <button class="tab hbg" id="postBtn" onclick="openPost()">
     <span class="hbg-l"></span><span class="hbg-l"></span><span class="hbg-l"></span>
   </button>
@@ -529,6 +532,33 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
       <button class="btn bo" id="confNo">Odustani</button>
       <button class="btn bp" id="confYes">Potvrdi</button>
     </div>
+  </div>
+</div>
+
+<!-- BACKUP MODAL -->
+<div class="modal-bg" id="backupModal" onclick="if(event.target===this)closeBackupModal()">
+  <div class="modal" style="padding:22px 18px 32px">
+    <div class="modal-title">💾 Backup podataka</div>
+    <div id="backupModalReminder" style="display:none;align-items:center;gap:10px;background:rgba(240,192,64,.10);border:1px solid var(--acc);border-radius:8px;padding:10px 13px;margin-bottom:14px">
+      <span style="font-size:1.1rem">⏰</span>
+      <span style="font-size:.8rem;flex:1;color:var(--txt)">Nisi radio backup <strong id="backupModalDaysAgo"></strong> — preporuča se backup.</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <button class="btn bp" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px" onclick="backupAll();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v13"/><path d="M7 11l5 5 5-5"/><rect x="3" y="17" width="18" height="4" rx="1.5"/></svg>
+        Preuzmi backup
+      </button>
+      <button class="btn" id="backupModalShareBtn" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px;background:var(--blu);color:#fff;border:none" onclick="shareBackup();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Podijeli backup
+      </button>
+      <button class="btn bo" style="width:100%;justify-content:center;display:flex;align-items:center;gap:8px;font-size:.85rem;padding:11px 17px" onclick="g('importFileInput').click();closeBackupModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-13"/><path d="M7 13l5-5 5 5"/><rect x="3" y="3" width="18" height="4" rx="1.5"/></svg>
+        Uvezi backup
+      </button>
+    </div>
+    <div class="ib" style="margin-top:12px">ℹ️ Backup sadrži podatke obje aplikacije + sve postavke. Podijeli ga WhatsApp-om, mailom, na Drive — gdje god želiš.</div>
+    <button class="btn bo" style="width:100%;margin-top:10px;font-size:.78rem" onclick="closeBackupModal()">Zatvori</button>
   </div>
 </div>
 
@@ -932,6 +962,21 @@ function shareBackup(){
 }
 function checkBackupReminder(){const last=parseInt(localStorage.getItem('fk_last_backup')||'0');const dismissed=parseInt(localStorage.getItem('fk_backup_dismissed')||'0');const banner=g('backupReminderBanner');if(!banner)return;const now=Date.now();const WEEK=7*24*60*60*1000;if((now-last>WEEK)&&(now-dismissed>WEEK)){const days=last?Math.floor((now-last)/(24*60*60*1000)):null;const el=g('backupDaysAgo');if(el)el.textContent=last?'već '+days+' dana':'još nikad';banner.style.display='flex'}else{banner.style.display='none'}}
 function dismissBackupReminder(){localStorage.setItem('fk_backup_dismissed',Date.now());const b=g('backupReminderBanner');if(b)b.style.display='none'}
+function openBackupModal(){
+  const last=parseInt(localStorage.getItem('fk_last_backup')||'0');
+  const rem=g('backupModalReminder');
+  if(rem){
+    const WEEK=7*24*60*60*1000;const now=Date.now();
+    if(now-last>WEEK){
+      const days=last?Math.floor((now-last)/(24*60*60*1000)):null;
+      const el=g('backupModalDaysAgo');
+      if(el)el.textContent=last?'već '+days+' dana':'još nikad';
+      rem.style.display='flex';
+    } else { rem.style.display='none'; }
+  }
+  g('backupModal').classList.add('on');
+}
+function closeBackupModal(){g('backupModal').classList.remove('on');}
 function importAll(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.v){toast('Neispravan format',true);return}
   if(d.a_j)localStorage.setItem('fk_a_j',JSON.stringify(d.a_j));
   if(d.a_cfg)localStorage.setItem('fk_a',d.a_cfg);
