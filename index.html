@@ -215,9 +215,41 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
   .hi{background:#f9f9f9!important;border:1px solid #ddd!important;page-break-inside:avoid}
   .nb{background:#1a1d25!important}.nb .l,.nb .v{color:#fff!important}
 }
+/* PWA INSTALL BANNER */
+#installBanner{display:none;position:sticky;top:0;z-index:190;background:linear-gradient(135deg,var(--surf) 0%,var(--surf2) 100%);border-bottom:2px solid var(--acc);padding:10px 14px;align-items:center;gap:10px;animation:bannerSlide .3s ease}
+#installBanner.on{display:flex}
+@keyframes bannerSlide{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.inst-icon{width:38px;height:38px;border-radius:9px;overflow:hidden;flex-shrink:0;background:var(--surf3)}
+.inst-icon img{width:100%;height:100%;object-fit:cover}
+.inst-text{flex:1;min-width:0}
+.inst-title{font-size:.82rem;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inst-sub{font-size:.7rem;color:var(--mut2);margin-top:1px;line-height:1.35}
+.inst-actions{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.inst-btn{font-family:var(--sans);font-weight:700;font-size:.75rem;padding:7px 13px;border-radius:7px;border:none;cursor:pointer;white-space:nowrap;transition:all .18s}
+.inst-btn.primary{background:var(--acc);color:#000}.inst-btn.primary:hover{background:var(--acc2)}
+.inst-btn.close{background:transparent;border:1px solid var(--brd2);color:var(--mut2);padding:6px 10px;font-size:.9rem;line-height:1}.inst-btn.close:hover{border-color:var(--red);color:var(--red)}
+/* iOS instructions inside banner */
+.inst-ios-steps{font-size:.7rem;color:var(--mut2);margin-top:4px;line-height:1.5}
+.inst-ios-steps strong{color:var(--txt)}
 </style>
 </head>
 <body class="light">
+
+<!-- PWA INSTALL BANNER -->
+<div id="installBanner" role="banner" aria-label="Instalacija aplikacije">
+  <div class="inst-icon">
+    <img src="icon-192.png" alt="FotoKalk">
+  </div>
+  <div class="inst-text">
+    <div class="inst-title">FotoKalk</div>
+    <div class="inst-sub" id="instSubText">Instaliraj aplikaciju za brži pristup i rad bez interneta.</div>
+  </div>
+  <div class="inst-actions">
+    <button class="inst-btn primary" id="instActionBtn" onclick="pwaInstall()">Instaliraj</button>
+    <button class="inst-btn close" onclick="pwaDismiss()" aria-label="Zatvori">✕</button>
+  </div>
+</div>
+
 <header>
   <label class="theme-sl" onclick="toggleTheme();return false;">
     <div class="theme-sl-track"></div>
@@ -1790,6 +1822,75 @@ if ('serviceWorker' in navigator) {
 }
 
 // ═══ INIT ═══
+// ─── PWA INSTALL BANNER ──────────────────────────────────────
+(function(){
+  // Ne prikazuj ako je već instaliran (standalone mode)
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+  if(isStandalone) return;
+
+  // Ne prikazuj ako je korisnik odbio u zadnjih 30 dana
+  const DISMISS_KEY = 'fk_install_dismissed';
+  const dismissed = parseInt(localStorage.getItem(DISMISS_KEY) || '0');
+  const MONTH = 30 * 24 * 60 * 60 * 1000;
+  if(Date.now() - dismissed < MONTH) return;
+
+  const banner = document.getElementById('installBanner');
+  const subText = document.getElementById('instSubText');
+  const actionBtn = document.getElementById('instActionBtn');
+  if(!banner) return;
+
+  // Detect iOS Safari
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  let deferredPrompt = null;
+
+  if(isIOS && isSafari) {
+    // iOS ne podržava beforeinstallprompt — prikaži upute
+    subText.innerHTML = 'Dodaj na početni zaslon: tapni <strong>↑ Dijeli</strong> → <strong>Dodaj na početni zaslon</strong>';
+    actionBtn.textContent = 'Kako?';
+    actionBtn.onclick = function(){
+      subText.innerHTML =
+        '<span class="inst-ios-steps">' +
+        '1. Tapni ikonu <strong>↑ Dijeli</strong> u donjoj traci<br>' +
+        '2. Skrolaj do <strong>„Dodaj na početni zaslon"</strong><br>' +
+        '3. Tapni <strong>„Dodaj"</strong> — gotovo!</span>';
+      actionBtn.style.display = 'none';
+    };
+    banner.classList.add('on');
+  } else {
+    // Chrome / Edge / Android — čekaj beforeinstallprompt
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault();
+      deferredPrompt = e;
+      banner.classList.add('on');
+    });
+    // Ako je već instaliran kroz drugi put
+    window.addEventListener('appinstalled', function(){
+      banner.classList.remove('on');
+      deferredPrompt = null;
+    });
+  }
+
+  window.pwaInstall = async function(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if(choice.outcome === 'accepted'){
+      banner.classList.remove('on');
+    }
+    deferredPrompt = null;
+  };
+
+  window.pwaDismiss = function(){
+    banner.classList.remove('on');
+    localStorage.setItem(DISMISS_KEY, Date.now());
+  };
+})();
+</script>
+<script>
 document.addEventListener('DOMContentLoaded',()=>{
   // Theme
   const th=localStorage.getItem('fk_theme');
