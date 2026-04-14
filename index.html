@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- FotoKalk v1.2.6 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -1498,7 +1499,7 @@ function openPlanModal(id){
     g('pl-stat').value=p.stat||'ceka'; g('pl-note').value=p.note||'';
   } else {
     ['pl-sifra','pl-ime1','pl-ime2','pl-tel','pl-ug','pl-adr','pl-lat','pl-lng','pl-note'].forEach(fid=>g(fid).value='');
-    g('pl-stat').value='ceka'; today('pl-dt');
+    g('pl-stat').value='ceka'; g('pl-dt').value='';
   }
   g('planModal').classList.add('on');
 }
@@ -1526,13 +1527,14 @@ function gcalUrl(p){
 }
 function planSave(){
   const dt=v('pl-dt');
+  const stat=(!dt)?'ceka':v('pl-stat');
   const plans=planLoad();
   const isNew=!planEditId;
   const obj={id:planEditId||String(Date.now()),dt,sifra:v('pl-sifra').trim(),
     ime1:v('pl-ime1').trim(),ime2:v('pl-ime2').trim(),tel:v('pl-tel').trim(),
     ug:v('pl-ug').trim(),
     adr:v('pl-adr').trim(),lat:v('pl-lat')||'',lng:v('pl-lng')||'',
-    stat:v('pl-stat'),note:v('pl-note').trim()};
+    stat,note:v('pl-note').trim()};
   if(planEditId){const idx=plans.findIndex(x=>x.id===planEditId);if(idx>=0)plans[idx]=obj;else plans.unshift(obj);}
   else plans.unshift(obj);
   planSaveAll(plans);
