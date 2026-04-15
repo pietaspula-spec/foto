@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- FotoKalk v1.2.7 | Kalkulator honorara za fotografe -->
+<!-- FotoKalk v1.2.1 | Kalkulator honorara za fotografe -->
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
@@ -56,15 +56,24 @@ main{max-width:960px;margin:0 auto;padding:18px 14px 0}
 .ct::after{content:'';flex:1;height:1px;background:var(--brd)}
 /* FORM */
 .row{display:grid;gap:10px;margin-bottom:10px}
-.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}
+.row>div{min-width:0}
+.c2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.c3{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
 label{font-size:.72rem;color:var(--mut2);font-weight:600;display:block;margin-bottom:4px}
 input,select{width:100%;background:var(--surf2);border:1px solid var(--brd);border-radius:7px;color:var(--txt);font-family:var(--mono);font-size:.85rem;padding:8px 10px;outline:none;transition:border-color .18s}
 input:focus,select:focus{border-color:var(--acc)}
 select option{background:var(--surf2)}
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=date]{min-width:0;width:100%}
 input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.5;filter:invert(.5)}
 body.light input[type=date]::-webkit-calendar-picker-indicator{filter:none}
+/* iPad — date picker icon (flex suffix, no absolute) */
+.date-wrap{display:flex;align-items:stretch}
+.date-wrap input[type=date]{flex:1;min-width:0}
+.date-icon-btn{display:none;width:36px;flex-shrink:0;background:var(--surf3);border:1px solid var(--brd);border-left:none;border-radius:0 7px 7px 0;font-size:1.1rem;cursor:pointer;align-items:center;justify-content:center;padding:0;color:var(--mut2)}
+body.is-ipad .date-wrap input[type=date]{border-radius:7px 0 0 7px}
+body.is-ipad .date-wrap input[type=date]::-webkit-calendar-picker-indicator{display:none}
+body.is-ipad .date-icon-btn{display:flex}
 /* KAT */
 .kat-list{display:flex;flex-direction:column;gap:6px}
 .kat-row{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:9px 11px;transition:border-color .18s}
@@ -319,7 +328,7 @@ body.apt .kat-row.on{background:rgba(52,211,153,.04)}
   <div class="modal">
     <div class="modal-title" id="planModalTitle">Novi termin snimanja</div>
     <div class="row c2">
-      <div><label>Datum snimanja</label><input type="date" id="pl-dt"></div>
+      <div><label>Datum snimanja</label><div class="date-wrap"><input type="date" id="pl-dt"><button class="date-icon-btn" type="button" onclick="document.getElementById('pl-dt').showPicker?.()" aria-label="Odaberi datum">📅</button></div></div>
       <div><label>Šifra objekta</label><input type="text" id="pl-sifra" placeholder="npr. 12345"></div>
     </div>
     <div class="row c2">
@@ -1893,6 +1902,14 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 <script>
+// ═══ iPAD DETECTION ═══
+(function(){
+  const ua = navigator.userAgent;
+  const isIPad = /iPad/.test(ua) ||
+    (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if(isIPad) document.body.classList.add('is-ipad');
+})();
+
 document.addEventListener('DOMContentLoaded',()=>{
   // Theme
   const th=localStorage.getItem('fk_theme');
